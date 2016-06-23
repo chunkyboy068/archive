@@ -1,0 +1,14 @@
+The Application of Unix in Developing Our Final Project
+=======================================================
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;In developing out final project, we took into consideration several rules of the Unix Design Philosophy as outlined in Eric Raymond's 'The Art of Unix Programming.'  We took into special consideration the Rules of Modularity, Clarity, Separation, Simplicity, and Optimization. We felt that these five are possibly the most important out of all the rest and that they are really some of the defining aspects of "good" software.  
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The Rule of Modularity states that simple parts should be written to be connected by clean interfaces.  This is very closely related to the Rules of Simplicity and Clarity.  In practice, we developed the functions following these rules.  Each function is very simple and for the most part does one thing.  They are then connected and used repeatedly to create our final project.  We used the signals and slots interfacing of QT to our advantage.  Signals and Slots is the backbone of our inter-process communication.  Our functions are also very clearly named.  They clearly state their purpose in order to prevent confusion among both us(the programmers) and those who may be viewing our code.  Comments are also used liberally to explain actions.  
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The Rules of Separation and Optimization played large roles in our final product.  Initially, the basis for our project was very cluttered and did not really follow any rules of Unix design philosophy.  Function and variable names were somewhat random and were spread out randomly between out 2 classes.  However, it was working and thus we decided to rebuild the project from scratch.  We first made sure that it was completely functional before we took it began tweaking it, in accordance with the rule of Optimization. Additionally, once we began adding new features, our "new" program seemed to flow very nicely.  In the development process, we separated out the operations of the GUI and the backend computerSim class.  The GUI became solely responsible for displaying information and contained only those functions while the computerSim class did all the rest.  
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When we chose our project, we wanted to create something that was really reflective of the Unix Design Philosophy, as well as incorporate several of the things we learned in class.  We felt that this was the perfect project to do so, as it contains elements of data parsing, file input and output, makefiles, and several other subjects we learned.  We feel that our final end product is representative of this and hope that you do as well.  Any feedback would be appreciated and would truly help us in becoming good software engineers.
+
+
+Ben Schoeler, Luke Spieler, and Thomas Yu

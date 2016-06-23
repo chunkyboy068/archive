@@ -1,0 +1,30 @@
+/////////////////////////////////////
+/////	Thomas Yu, 905510040	/////
+////	ECE 3574, Fall 2012	/////
+////	09/20/2012		/////
+////	dictionary.h		/////
+////	thomaswy@vt.edu		/////
+/////////////////////////////////////
+
+#include <QString>
+#include <QTextStream>
+#include <QFile>
+#include <QHash>
+#include <QMap>
+
+class Dictionary
+{
+private:
+	QHash<QString, int> dict;		//used to store the dictionary, format: word:key
+	QHash<int, int> stat;			//used to store the occurrences of correct words, format: key:occurence
+	QHash<QString, int> wrong;		//used to store the occurrences of incorrect words,format: word:occurence	
+	
+public:
+	Dictionary();
+	Dictionary(QString lang);
+	int dictLook(QString word);
+	QStringList countWord();
+	QStringList misCount();
+	void insOccur(int key);	
+	void missSpell(QString word);
+};

@@ -1,0 +1,495 @@
+MPASM  5.44                  DP4START_S12.ASM   5-1-2012  12:10:19         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ; Thomas Yu 
+                      00002 ; Virginia Tech * ECE 2504 * Spring 2012
+                      00003 ; Design Project 4:  Vending Machine Controller
+                      00004 ; April 28, 2012
+                      00005 ; 
+                      00006 ; The algorithm used to compute the change and when to dispense consists of
+                      00007 ; several conditions that need to be satisfied.  Initially, the coin that is
+                      00008 ; inserted is checked.  Since each coin input places a different value in inval,
+                      00009 ; inval is checked to see which coin is inserted.  Based on this, a different 
+                      00010 ; subroutine is called to calculate the total coins. The next subroutine is
+                      00011 ; then called to check whether enough money has been inserted by simply
+                      00012 ; subracting the cost from the total inerted.  Depending on this, the dispense
+                      00013 ; subroutine is called to calculate change through subtraction.  After change
+                      00014 ; is returned, the dispense subroutine then dispenses a snickers bar and returns
+                      00015 ; to waiting for input.  An additional subroutine, return-coins, is used when
+                      00016 ; the coin return is pressed or a penny is inserted.
+                      00017 ; =====================================================================
+                      00018 ; This Microchip-developed include file defines CPU registers such as 
+                      00019 ; STATUS as 0x03, FSR 0x04, INDF 0x00, C (carry) bit 0x00, Z (zero) bit 
+                      00020 ; 0x02 ...
+                      00021         include P16F84.INC
+                      00001         LIST
+                      00002 
+                      00003 ;==========================================================================
+                      00004 ;  MPASM PIC16F84 processor include
+                      00005 ; 
+                      00006 ;  (c) Copyright 1999-2012 Microchip Technology, All rights reserved
+                      00007 ;==========================================================================
+                      00008 
+                      00206         LIST
+                      00022 ; =====================================================================
+                      00023 ; turn off the watchdog timer to fix odd behavior on long runs.
+2007   3FF2           00024         __CONFIG _HS_OSC&_WDT_OFF&_PWRTE_ON&_CP_OFF 
+                      00025 
+                      00026 ; Program specific equate table
+                      00027 ; These are user-defined equate statements naming symbolic labels
+                      00028 ; specific to ths program.
+                      00029 
+  00000001            00030 coinreturn      equ     1       ; coin return button sets PORTB bit1
+  00000002            00031 penny           equ     2       ; inserting a penny sets PORTB bit2
+  00000003            00032 nickel          equ     3       ; inserting a nickel sets PORTB bit3
+  00000004            00033 dime            equ     4       ; inserting a dime sets PORTB bit4
+  00000005            00034 quarter         equ     5       ; inserting a quarter sets PORTB bit5
+  00000006            00035 dollar                  equ             6               ; inserting a dollar sets PORTB bit6
+  00000003            00036 numloops                equ             0x03    ; used for delay loop
+  00000046            00037 enough          equ     0x46    ; cost of a Snickers bar is $0.80
+                      00038 
+                      00039 ; Define output locations
+                      00040 ; these definitions are supplied to the user and must not be modified
+  00000010            00041 change_ret      equ     0x10    ; write 0x10 to this location to return a quarter, 
+                      00042                                                 ; 0x08 to return a dime, 0x04 to return a nickel
+  00000011            00043 coin_return     equ     0x11    ; write 0x02 to this location to return all coins inserted
+  00000012            00044 snickers        equ 0x12        ; write 0xFF to this location to dispense a Snickers
+MPASM  5.44                  DP4START_S12.ASM   5-1-2012  12:10:19         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00045 
+                      00046 ; Define the data storage locations
+                      00047 ; these definitions are supplied to the user and must not be modified
+  00000020            00048 inval           equ 0x20        ; the last port value read by the ISR
+  00000021            00049 semaphore       equ 0x21        ; an indicator that a value has been loaded into inval
+  00000022            00050 _wstore     equ 0x22    ; a location to hold w during interrupt service routine
+  00000023            00051 totalcoins      equ     0x23    ; total currency inserted so far (cents)
+  00000024            00052 change          equ     0x24    ; amount of change to be returned
+  00000025            00053 holdcount       equ 0x25        ; used for delay loop
+                      00054 
+                      00055 ; =====================================================================
+  00000013            00056 temp1           equ     0x13    ;location of snickers cost
+                      00057 ; =====================================================================
+                      00058 
+                      00059 
+                      00060 ; Do not change this section from here to the label "main" at 0x100.
+                      00061 ; Start defining the program
+                      00062 ; Jump around the interrupt handler return to the main program
+0000                  00063                 org     0x0
+0000   178B           00064 start   bsf             INTCON,GIE      ; enable interrupts
+0001   160B           00065                 bsf             INTCON,INTE     ; enable interupts
+0002   01A1           00066                 clrf    semaphore       ; clear local signalling variable
+0003   2900           00067                 goto    main
+                      00068 
+                      00069 
+                      00070 ; ====================================================================
+                      00071 ; ISR (= Interrupt Service Routine, or Interrupt Handler).
+                      00072 ; It reads a 4-bit value from PORTB and stores it in location "inval".
+                      00073 ; In this assignment, assume that 200 cycles or more pass between interrupts.
+                      00074 ; First interrupt occurs only after 200 cycles to allow processor to setup after 
+                      00075 ; power up.
+                      00076 ; Do not modify this ISR code.
+0004                  00077                 org 0x4
+0004   00A2           00078 handler movwf   _wstore         ; temporaily store current w during interrupt service
+0005   0806           00079                 movf    PORTB,w                 ; get pin values
+0006   39FE           00080         andlw   0xFE            ; zero out low order bit (INT pin)
+0007   00A0           00081                 movwf   inval                   ; put pin values in inval
+0008   1421           00082                 bsf             semaphore,0             ; indicate that new pin values are available
+0009   0822           00083         movf    _wstore, w      ; restore the old value of w
+000A   108B           00084                 bcf             INTCON,INTF             ; clear interrupt flag
+000B   1006           00085         bcf     PORTB, 0
+000C   0009           00086                 retfie                                  ; return to instruction at which int occurred
+                      00087 ; End of interrupt handler section
+                      00088 ; ======================================================================
+                      00089 
+                      00090 ; Beginning of the "real" program
+0100                  00091         org 0x100
+0100                  00092 main
+0100   0000           00093                 nop
+0101   0190           00094                 clrf    change_ret              ;clear all
+0102   0191           00095                 clrf    coin_return             
+0103   0192           00096                 clrf    snickers
+0104   01A3           00097                 clrf    totalcoins
+MPASM  5.44                  DP4START_S12.ASM   5-1-2012  12:10:19         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0105   01A4           00098                 clrf    change
+0106   0193           00099                 clrf    temp1
+0107   3050           00100                 movlw   0x50                    ;cost of snickers is 80 cents, 50 in hex
+0108   0093           00101                 movwf   temp1                   ;location of snickers cost
+                      00102                 
+                      00103 
+                      00104 ; ======================================================================
+                      00105 ;               the program sits in this loop waiting for interrupts
+                      00106 ;               when a new input value is available, semaphore is set to 1
+0109   1C21           00107 loop    btfss   semaphore,0
+010A   2909           00108                 goto    loop
+                      00109 ;               at this point, the location "inval" will have the last 7-bit value read from port B
+                      00110 ;               this 7-bit value represents the coins inserted
+                      00111 
+010B   1021           00112                 bcf             semaphore,0     ;reset semaphore to indicate interrupt handled
+                      00113 ; =====================================================================
+                      00114 
+010C   1AA0           00115                 btfsc   inval,5 ;check if dollar
+010D   212D           00116                 call    dollar_in
+010E   1A20           00117                 btfsc   inval,4 ;check if quarter
+010F   2129           00118                 call    quarter_in
+0110   19A0           00119                 btfsc   inval,3 ;check if dime
+0111   2125           00120                 call    dime_in
+0112   1920           00121                 btfsc   inval,2 ;check if nickel
+0113   2121           00122                 call    nickel_in
+0114   1B20           00123                 btfsc   inval,6 ;check if coin return pressed
+0115   2119           00124                 call    return_coins
+0116   18A0           00125                 btfsc   inval,1 ;if penny is inserted, return_coins is also called
+0117   2119           00126                 call    return_coins
+                      00127 
+0118   2909           00128 next    goto    loop
+                      00129 ; End of 'main'
+                      00130 ;=================================================================================
+0119                  00131 return_coins
+0119   3002           00132                 movlw   0x02                                    ;moves literal of 0x02 into the
+011A   0091           00133                 movwf   coin_return                             ;coin_return position
+011B   01A3           00134                 clrf    totalcoins                              ;all variables are cleared to reset
+011C   01A4           00135                 clrf    change
+011D   2179           00136                 call    countto15                               ;0x02 held for 30 cycles
+011E   2179           00137                 call    countto15
+011F   0191           00138                 clrf    coin_return                             ;0x02 cleared
+0120   0008           00139                 return
+                      00140 ;=================================================================================
+0121                  00141 nickel_in
+0121   3005           00142                 movlw   0x05                                    ;literal value of 5 is moved into w
+0122   07A3           00143                 addwf   totalcoins,1                    ;5 is added into the total coins register
+0123   2131           00144                 call    check_amount                    ;check amount is called
+0124   0008           00145                 return
+                      00146 ;=================================================================================
+0125                  00147 dime_in
+0125   300A           00148                 movlw   0x0A                                    ;literal value of 10 is moved to w
+0126   07A3           00149                 addwf   totalcoins,1                    ;10 is added to total coins
+0127   2131           00150                 call    check_amount                    ;check amount called
+MPASM  5.44                  DP4START_S12.ASM   5-1-2012  12:10:19         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0128   0008           00151                 return
+                      00152 ;=================================================================================
+0129                  00153 quarter_in
+0129   3019           00154                 movlw   0x19                                    ;literal value of 25 moved into w
+012A   07A3           00155                 addwf   totalcoins,1                    ;25 is added to total coins
+012B   2131           00156                 call    check_amount                    ;check amount called
+012C   0008           00157                 return
+                      00158 
+                      00159 ;=================================================================================
+012D                  00160 dollar_in
+012D   3064           00161                 movlw   0x64
+012E   07A3           00162                 addwf   totalcoins,1    ;places 100 into total inserted
+012F   2131           00163                 call    check_amount
+0130   0008           00164                 return
+                      00165 ;=================================================================================
+0131   1BA3           00166 check_amount    btfsc   totalcoins,7    ;checks if equal 80 cents has been input
+0132   2943           00167                                 goto    not_equal               ;if it gets through all the bit tests,
+0133   1F23           00168                                 btfss   totalcoins,6    ;then there is exactly 80 cents and
+0134   2943           00169                                 goto    not_equal               ;dispense is called. otherwise, as soon
+0135   1AA3           00170                                 btfsc   totalcoins,5    ;as there is a different bit, not_equal 
+0136   2943           00171                                 goto    not_equal               ;is called
+0137   1E23           00172                                 btfss   totalcoins,4
+0138   2943           00173                                 goto    not_equal
+0139   19A3           00174                                 btfsc   totalcoins,3
+013A   2943           00175                                 goto    not_equal       
+013B   1923           00176                                 btfsc   totalcoins,2
+013C   2943           00177                                 goto    not_equal
+013D   18A3           00178                                 btfsc   totalcoins,1
+013E   2943           00179                                 goto    not_equal
+013F   1823           00180                                 btfsc   totalcoins,0
+0140   2943           00181                                 goto    not_equal
+0141   2149           00182                                 call    dispense                ;if equal, then call exact change
+0142   2948           00183                                 goto    end_check
+                      00184 
+0143                  00185 not_equal
+0143   1403           00186                                 bsf             STATUS,C                ;C bit of STATUS is reset to 1
+0144   0813           00187                                 movfw   temp1                   ;0x50 (80 decimal) is subtracted from
+0145   0223           00188                                 subwf   totalcoins,0    ;total coins. if negative, then not 
+0146   1803           00189                                 btfsc   STATUS,C                ;enough has been inserted
+0147   2149           00190                                 call    dispense
+                      00191 
+0148                  00192 end_check
+0148   0008           00193                 return
+                      00194 ;================================================================================
+0149   0813           00195 dispense        movfw   temp1                           ;move the hex 50 (80 decimal) into w
+014A   0223           00196                         subwf   totalcoins,0            ;subtract this from total coins
+014B   00A4           00197                         movwf   change                          ;move the result into change 
+014C                  00198 changeloop
+014C   1B24           00199                         btfsc   change,6                        ;check bit 6 of change, if set, largest
+014D   295A           00200                         goto    return_quarter          ;subtractable coin is quarter, call quarter
+014E   1AA4           00201                         btfsc   change,5                        ;check bit 5, same as above
+014F   295A           00202                         goto    return_quarter          
+0150   1A24           00203                         btfsc   change,4                        ;check bit 4, could be quarter or dime
+MPASM  5.44                  DP4START_S12.ASM   5-1-2012  12:10:19         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0151   2957           00204                         goto    quarter_or_dime
+0152   19A4           00205                         btfsc   change,3                        ;check bit 3, largest is dime
+0153   2962           00206                         goto    return_dime
+0154   1924           00207                         btfsc   change,2                        ;check bit 2, largest is nickel
+0155   296A           00208                         goto    return_nickel
+0156   2972           00209                         goto    give_candy                      ;if none are set, then candy is dispense
+                            d
+                      00210 
+0157                  00211 quarter_or_dime                                                 ;this selects whther a quarter or dime
+0157   19A4           00212                         btfsc   change,3                        ;should be dispensed by checking bit3
+0158   295A           00213                         goto    return_quarter          ;checking bit 3 tells us if the value is
+0159   2962           00214                         goto    return_dime                     ;20 or 25
+                      00215                         
+                      00216 
+015A                  00217 return_quarter                                                  
+015A   3019           00218                         movlw   0x19                            ;moves 0x19 (decimal 25) to w
+015B   02A4           00219                         subwf   change,1                        ;subtracts
+015C   3010           00220                         movlw   0x10                            ;moving 0x10 to change_ret means quarter
+015D   0090           00221                         movwf   change_ret                      ;is returned
+015E   2179           00222                         call    countto15                       ;delay for 15 cycles
+015F   2179           00223                         call    countto15                       ;delay for another 15 cycles
+0160   0190           00224                         clrf    change_ret                      ;clears change_ret
+0161   294C           00225                         goto    changeloop                      ;recalculates change needed
+                      00226 
+0162                  00227 return_dime                                                             ;this does the exact same with a
+0162   300A           00228                         movlw   0x0A                            ;dime as it does with the quarter. for
+0163   02A4           00229                         subwf   change,1                        ;reference, check return_quarter
+0164   3008           00230                         movlw   0x08
+0165   0090           00231                         movwf   change_ret
+0166   2179           00232                         call    countto15
+0167   2179           00233                         call    countto15
+0168   0190           00234                         clrf    change_ret
+0169   294C           00235                         goto    changeloop
+                      00236 
+016A                  00237 return_nickel
+016A   3005           00238                         movlw   0x05                            ;does the exact same as return_quarter
+016B   02A4           00239                         subwf   change,1                        ;but with a nickel. for reference,
+016C   3004           00240                         movlw   0x04                            ;check return_quarter
+016D   0090           00241                         movwf   change_ret
+016E   2179           00242                         call    countto15
+016F   2179           00243                         call    countto15
+0170   0190           00244                         clrf    change_ret
+0171   294C           00245                         goto    changeloop
+                      00246 
+0172                  00247 give_candy
+0172   30FF           00248                         movlw   0xFF                            ;gives candy. after all the change is
+0173   0092           00249                         movwf   snickers                        ;dispensed, 0xFF is written to location
+0174   2179           00250                         call    countto15                       ;snickers to dispense snickers bar and
+0175   2179           00251                         call    countto15                       ;held for 30 cycles. location snickers
+0176   0192           00252                         clrf    snickers                        ;is then returned and the coins inserted
+0177   01A3           00253                         clrf    totalcoins                      ;is cleared
+0178   0008           00254                         return
+                      00255                         
+MPASM  5.44                  DP4START_S12.ASM   5-1-2012  12:10:19         PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00256 
+                      00257 ; ======================================================================
+                      00258 ; This subroutine provides a delay loop of approximately 15 cycles
+0179   3003           00259 countto15       movlw   numloops        ;number of times to loop initialized
+017A   00A5           00260                 movwf   holdcount
+017B   0000           00261                                 nop
+Message[305]: Using default destination of 1 (file).
+017C   0BA5           00262 again           decfsz  holdcount       ;tight loop based on numloops variable
+017D   297C           00263                 goto    again
+017E   0008           00264                 return                          ;delay of about 15 cycles complete
+                      00265                                                                         ;Note: branches, including call,
+                             skip
+                      00266                                                                         ;and goto, require 2 cycles
+                      00267 ; ======================================================================
+                      00268         
+                      00269 
+                      00270 
+                      00271                 end
+MPASM  5.44                  DP4START_S12.ASM   5-1-2012  12:10:19         PAGE  7
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+C                                 00000000
+DC                                00000001
+EEADR                             00000009
+EECON1                            00000088
+EECON2                            00000089
+EEDATA                            00000008
+EEIE                              00000006
+EEIF                              00000004
+F                                 00000001
+FSR                               00000004
+GIE                               00000007
+INDF                              00000000
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+IRP                               00000007
+NOT_PD                            00000003
+NOT_RBPU                          00000007
+NOT_TO                            00000004
+OPTION_REG                        00000081
+PCL                               00000002
+PCLATH                            0000000A
+PORTA                             00000005
+PORTB                             00000006
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+PSA                               00000003
+RA0                               00000000
+RA1                               00000001
+RA2                               00000002
+RA3                               00000003
+RA4                               00000004
+RB0                               00000000
+RB1                               00000001
+RB2                               00000002
+RB3                               00000003
+RB4                               00000004
+RB5                               00000005
+RB6                               00000006
+RB7                               00000007
+RBIE                              00000003
+RBIF                              00000000
+RD                                00000000
+RP0                               00000005
+RP1                               00000006
+STATUS                            00000003
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+T0SE                              00000004
+TMR0                              00000001
+MPASM  5.44                  DP4START_S12.ASM   5-1-2012  12:10:19         PAGE  8
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+TMR0IE                            00000005
+TMR0IF                            00000002
+TRISA                             00000085
+TRISA0                            00000000
+TRISA1                            00000001
+TRISA2                            00000002
+TRISA3                            00000003
+TRISA4                            00000004
+TRISB                             00000086
+TRISB0                            00000000
+TRISB1                            00000001
+TRISB2                            00000002
+TRISB3                            00000003
+TRISB4                            00000004
+TRISB5                            00000005
+TRISB6                            00000006
+TRISB7                            00000007
+W                                 00000000
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+Z                                 00000002
+_CONFIG                           00002007
+_CP_OFF                           00003FFF
+_CP_ON                            0000000F
+_FOSC_EXTRC                       00003FFF
+_FOSC_HS                          00003FFE
+_FOSC_LP                          00003FFC
+_FOSC_XT                          00003FFD
+_HS_OSC                           00003FFE
+_IDLOC0                           00002000
+_IDLOC1                           00002001
+_IDLOC2                           00002002
+_IDLOC3                           00002003
+_LP_OSC                           00003FFC
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FF7
+_RC_OSC                           00003FFF
+_WDTE_OFF                         00003FFB
+_WDTE_ON                          00003FFF
+_WDT_OFF                          00003FFB
+_WDT_ON                           00003FFF
+_XT_OSC                           00003FFD
+__16F84                           00000001
+__DEBUG                           1
+_wstore                           00000022
+again                             0000017C
+change                            00000024
+change_ret                        00000010
+changeloop                        0000014C
+check_amount                      00000131
+coin_return                       00000011
+coinreturn                        00000001
+MPASM  5.44                  DP4START_S12.ASM   5-1-2012  12:10:19         PAGE  9
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+countto15                         00000179
+dime                              00000004
+dime_in                           00000125
+dispense                          00000149
+dollar                            00000006
+dollar_in                         0000012D
+end_check                         00000148
+enough                            00000046
+give_candy                        00000172
+handler                           00000004
+holdcount                         00000025
+inval                             00000020
+loop                              00000109
+main                              00000100
+next                              00000118
+nickel                            00000003
+nickel_in                         00000121
+not_equal                         00000143
+numloops                          00000003
+penny                             00000002
+quarter                           00000005
+quarter_in                        00000129
+quarter_or_dime                   00000157
+return_coins                      00000119
+return_dime                       00000162
+return_nickel                     0000016A
+return_quarter                    0000015A
+semaphore                         00000021
+snickers                          00000012
+start                             00000000
+temp1                             00000013
+totalcoins                        00000023
+
+
+MEMORY USAGE MAP ('X' = Used,  '-' = Unused)
+
+0000 : XXXXXXXXXXXXX--- ---------------- ---------------- ----------------
+0100 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0140 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXX-
+2000 : -------X-------- ---------------- ---------------- ----------------
+
+All other memory blocks unused.
+
+Program Memory Words Used:   140
+Program Memory Words Free:   884
+
+
+Errors   :     0
+Warnings :     0 reported,     0 suppressed
+Messages :     1 reported,     0 suppressed
+
+

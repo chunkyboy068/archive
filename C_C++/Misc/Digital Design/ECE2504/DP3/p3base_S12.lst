@@ -1,0 +1,356 @@
+MPASM  5.44                    P3BASE_S12.ASM   4-20-2012  0:19:56         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ; Thomas Yu * 04/17/2012
+                      00002 ; Virginia Tech * ECE 2504 * Spring 2012
+                      00003 ; Design Project 3
+                      00004 ; 
+                      00005 ; =====================================================================
+                      00006 ; This Microchip-developed include file defines CPU registers such as 
+                      00007 ; STATUS as 0x03, FSR 0x04, INDF 0x00, C (carry) bit 0x00, Z (zero) bit 
+                      00008 ; 0x02, etc.
+                      00009                 include         P16F84.INC
+                      00001         LIST
+                      00002 
+                      00003 ;==========================================================================
+                      00004 ;  MPASM PIC16F84 processor include
+                      00005 ; 
+                      00006 ;  (c) Copyright 1999-2012 Microchip Technology, All rights reserved
+                      00007 ;==========================================================================
+                      00008 
+                      00206         LIST
+                      00010 
+                      00011 ; The '__CONFIG' directive is used to embed configuration data within .asm file.
+                      00012 ; Here, we turn off the Watchdog Timer.
+2007   3FFB           00013                 __CONFIG        _WDT_OFF
+                      00014  
+                      00015 ; Some listing control directives
+                      00016                 list            p=16f84 ; we are using the PIC 16f84 processor.
+                      00017                 title           "Design Project 3" 
+                      00018 
+                      00019 
+                      00020 ; =====================================================================
+                      00021 ; Program specific equate table
+                      00022 ; These are user-defined equate statements naming symbolic labels
+                      00023 ; specific to this program.
+  00000020            00024 avg_val equ             0x20            ; address of average value (computed by this program)
+  00000021            00025 max_val equ             0x21            ; address of maximum value (computed by this program)
+  00000030            00026 num_arr equ             0x30            ; address of first item in data array 
+  0000002F            00027 total   equ             0x2f            ; address of the sum of numbers in array
+  0000002D            00028 loopct  equ             0x2d            ; address of the loop counter
+  00000022            00029 temp1   equ             0x22            ; address of temporary location 1
+  00000024            00030 temp2   equ             0x24            ; address of temporary location 2
+                      00031 ; =====================================================================
+                      00032 ; Main program follows.
+                      00033         
+0000                  00034                 org             0x00            ; start program at program memory location 0
+                      00035 
+0000                  00036 program_start
+                      00037 
+0000   3008           00038                 movlw   0x08            ;puts 8 into w
+0001   00AD           00039                 movwf   loopct          ;puts 8 into 0x2d
+0002   3030           00040                 movlw   num_arr         ;puts the location of the first number in w
+0003   0084           00041                 movwf   FSR                     ;puts w into FSR
+0004   0830           00042                 movfw   num_arr         ;places first number into w
+0005   00A1           00043                 movwf   max_val         ;the first number will always be the first max
+                      00044 
+MPASM  5.44                    P3BASE_S12.ASM   4-20-2012  0:19:56         PAGE  2
+Design Project 3
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0006                  00045 loop
+0006   0800           00046                 movfw   INDF            ;moves contents of address in INDF to w
+0007   00A2           00047                 movwf   temp1           ;moves data value to 0x22
+0008   1BA2           00048                 btfsc   temp1,7         ;checks if 0x22 is negative
+0009   203E           00049                 call    neg_op          ;negative operation to get total
+000A   1FA2           00050                 btfss   temp1,7         ;checks if 0x22 is positive
+000B   2046           00051                 call    pos_op          ;positive operation to get total
+                      00052 
+000C   2023           00053                 call    compute_max     ;computs whether 0x21 or 0x22 is bigger
+Message[305]: Using default destination of 1 (file).
+000D   0A84           00054                 incf    FSR                     ;increments FSR, now points to next number
+Message[305]: Using default destination of 1 (file).
+000E   0BAD           00055                 decfsz  loopct          ;dec loop from 8 to 0, ends loop if zero
+000F   2806           00056                 goto loop
+                      00057 
+0010   2012           00058                 call    compute_avg     ;computes average value
+                      00059 
+                      00060 
+0011   2811           00061 last    goto    last            ; infinite loop
+                      00062 
+                      00063 
+                      00064 
+                      00065 
+                      00066 
+0012                  00067 compute_avg
+0012   0000           00068                 nop
+                      00069 
+0013   3003           00070                 movlw   0x03    ;moves literal value of 3 to w.  3 is the loop count
+0014   00AD           00071                 movwf   loopct  ;moves w to 0x2D
+0015   082F           00072                 movfw   total   ;moves total to w
+0016   00A2           00073                 movwf   temp1   ;moves  w to 0x22
+0017   1403           00074                 bsf             STATUS,C;sets the carry bit to 1 in case it was zero before
+                      00075 
+0018                  00076 loop1
+0018   1FA2           00077                 btfss   temp1,7 ;checks positon 7 to see if set, skips if it is
+0019   1003           00078                 bcf             STATUS,C;if it is positive, then the carry bit needs to be cleared
+Message[305]: Using default destination of 1 (file).
+001A   0CA2           00079                 rrf             temp1   ;rotate 0x22, essentially a division by 2
+001B   1403           00080                 bsf             STATUS,C;resets the carry bit
+Message[305]: Using default destination of 1 (file).
+001C   0BAD           00081                 decfsz  loopct  ;dec the loop counter. if it hits zero, ends loop
+001D   2818           00082                 goto loop1
+                      00083 
+001E   0822           00084                 movfw   temp1   ;moves the final number, the average, to w
+001F   00A0           00085                 movwf   avg_val ;moves w to the final register position
+                      00086                                 
+0020   3000           00087                 movlw   0x00    ;moves literal value of 0 to w
+0021   00AF           00088                 movwf   total   ;places 0 into 0x2f so that another average can be calculated
+                      00089 
+0022   0008           00090                 return                  ; end of compute_avg, return
+                      00091 
+                      00092 
+                      00093 
+MPASM  5.44                    P3BASE_S12.ASM   4-20-2012  0:19:56         PAGE  3
+Design Project 3
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00094 
+0023                  00095 compute_max
+0023   0000           00096                 nop
+                      00097 
+0024   0822           00098                 movfw   temp1   ; moves new number to w
+0025   00A4           00099                 movwf   temp2   ; moves w to temp position 2 to preserve the number
+0026   1BA1           00100                 btfsc   max_val,7; test current max if negative, skip if it is
+0027   2838           00101                 goto    cond3
+                      00102 
+0028   1BA2           00103                 btfsc   temp1,7 ;if the new number is negative
+0029   282B           00104                 goto    cond1   ;goto condition 1
+002A   282F           00105                 goto    cond2   ;goto condition 2
+                      00106 
+002B                  00107 cond1
+002B   1FA1           00108                 btfss   max_val,7       ;if the current max negative, skip next line
+002C   283D           00109                 goto    endmax  
+002D   1BA1           00110                 btfsc   max_val,7       ;if the current max is negative
+002E   282F           00111                 goto    cond2
+002F                  00112 cond2                                   
+Message[305]: Using default destination of 1 (file).
+002F   09A2           00113                 comf    temp1   ;begins 2's complement of F
+Message[305]: Using default destination of 1 (file).
+0030   0AA2           00114                 incf    temp1   ;finishes 2's complement by increasing F by 1
+0031   0821           00115                 movfw   max_val ;moves current max into f
+0032   07A2           00116                 addwf   temp1,1 ;adds the two numbers and places back into 0x22
+0033   1FA2           00117                 btfss   temp1,7 ;checks to see if the new number is negative
+0034   283D           00118                 goto    endmax  ;if not the current max is bigger
+0035   0824           00119                 movfw   temp2   ;otherwise the new number is bigger and is moved into w
+0036   00A1           00120                 movwf   max_val ;the new number is moved into max_val
+0037   283D           00121                 goto    endmax
+                      00122 
+0038                  00123 cond3
+0038   1BA2           00124                 btfsc   temp1,7 ;check new number if positive, if it is skip next
+0039   282F           00125                 goto    cond2
+003A   0822           00126                 movfw   temp1   ;moves new number into w
+003B   00A1           00127                 movwf   max_val ;the new number is positive and the current max negative, new becomes ma
+                            x
+003C   283D           00128                 goto    endmax
+                      00129                 
+                      00130                 
+003D                  00131 endmax          
+003D   0008           00132                 return                  ; end of compute_avg, return
+                      00133 
+                      00134 
+                      00135 
+003E                  00136 neg_op                                  ;this operation is used if a negative number is added
+003E   0000           00137                 nop
+                      00138                 
+003F   0822           00139                 movfw   temp1   ;moves current number to w
+0040   00A4           00140                 movwf   temp2   ;moves w to 0x24
+Message[305]: Using default destination of 1 (file).
+0041   03A4           00141                 decf    temp2   ;begins to undo 2's complement. subtracts 1
+Message[305]: Using default destination of 1 (file).
+MPASM  5.44                    P3BASE_S12.ASM   4-20-2012  0:19:56         PAGE  4
+Design Project 3
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0042   09A4           00142                 comf    temp2   ;finishes undoing 2's complement by complementing 
+0043   0824           00143                 movfw   temp2   ;moves value to w
+0044   02AF           00144                 subwf   total,1 ;subtracts w from the total, places back in total position
+                      00145 
+0045   0008           00146                 return          
+                      00147 
+                      00148 
+                      00149 
+0046                  00150 pos_op                                  ;this operation is used if a positive number is added
+0046   0000           00151                 nop
+                      00152 
+0047   0822           00153                 movfw   temp1   ;the number is placed into w
+0048   07AF           00154                 addwf   total,1 ;w is added to total and placed back into the total position
+                      00155 
+0049   0008           00156                 return
+                      00157 
+                      00158 
+                      00159 
+                      00160                 end
+MPASM  5.44                    P3BASE_S12.ASM   4-20-2012  0:19:56         PAGE  5
+Design Project 3
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+C                                 00000000
+DC                                00000001
+EEADR                             00000009
+EECON1                            00000088
+EECON2                            00000089
+EEDATA                            00000008
+EEIE                              00000006
+EEIF                              00000004
+F                                 00000001
+FSR                               00000004
+GIE                               00000007
+INDF                              00000000
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+IRP                               00000007
+NOT_PD                            00000003
+NOT_RBPU                          00000007
+NOT_TO                            00000004
+OPTION_REG                        00000081
+PCL                               00000002
+PCLATH                            0000000A
+PORTA                             00000005
+PORTB                             00000006
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+PSA                               00000003
+RA0                               00000000
+RA1                               00000001
+RA2                               00000002
+RA3                               00000003
+RA4                               00000004
+RB0                               00000000
+RB1                               00000001
+RB2                               00000002
+RB3                               00000003
+RB4                               00000004
+RB5                               00000005
+RB6                               00000006
+RB7                               00000007
+RBIE                              00000003
+RBIF                              00000000
+RD                                00000000
+RP0                               00000005
+RP1                               00000006
+STATUS                            00000003
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+T0SE                              00000004
+TMR0                              00000001
+MPASM  5.44                    P3BASE_S12.ASM   4-20-2012  0:19:56         PAGE  6
+Design Project 3
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+TMR0IE                            00000005
+TMR0IF                            00000002
+TRISA                             00000085
+TRISA0                            00000000
+TRISA1                            00000001
+TRISA2                            00000002
+TRISA3                            00000003
+TRISA4                            00000004
+TRISB                             00000086
+TRISB0                            00000000
+TRISB1                            00000001
+TRISB2                            00000002
+TRISB3                            00000003
+TRISB4                            00000004
+TRISB5                            00000005
+TRISB6                            00000006
+TRISB7                            00000007
+W                                 00000000
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+Z                                 00000002
+_CONFIG                           00002007
+_CP_OFF                           00003FFF
+_CP_ON                            0000000F
+_FOSC_EXTRC                       00003FFF
+_FOSC_HS                          00003FFE
+_FOSC_LP                          00003FFC
+_FOSC_XT                          00003FFD
+_HS_OSC                           00003FFE
+_IDLOC0                           00002000
+_IDLOC1                           00002001
+_IDLOC2                           00002002
+_IDLOC3                           00002003
+_LP_OSC                           00003FFC
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FF7
+_RC_OSC                           00003FFF
+_WDTE_OFF                         00003FFB
+_WDTE_ON                          00003FFF
+_WDT_OFF                          00003FFB
+_WDT_ON                           00003FFF
+_XT_OSC                           00003FFD
+__16F84                           00000001
+__DEBUG                           1
+avg_val                           00000020
+compute_avg                       00000012
+compute_max                       00000023
+cond1                             0000002B
+cond2                             0000002F
+cond3                             00000038
+endmax                            0000003D
+last                              00000011
+MPASM  5.44                    P3BASE_S12.ASM   4-20-2012  0:19:56         PAGE  7
+Design Project 3
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+loop                              00000006
+loop1                             00000018
+loopct                            0000002D
+max_val                           00000021
+neg_op                            0000003E
+num_arr                           00000030
+pos_op                            00000046
+program_start                     00000000
+temp1                             00000022
+temp2                             00000024
+total                             0000002F
+
+
+MEMORY USAGE MAP ('X' = Used,  '-' = Unused)
+
+0000 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0040 : XXXXXXXXXX------ ---------------- ---------------- ----------------
+2000 : -------X-------- ---------------- ---------------- ----------------
+
+All other memory blocks unused.
+
+Program Memory Words Used:    74
+Program Memory Words Free:   950
+
+
+Errors   :     0
+Warnings :     0 reported,     0 suppressed
+Messages :     8 reported,     0 suppressed
+
+

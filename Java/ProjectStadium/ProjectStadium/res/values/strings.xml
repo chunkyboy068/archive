@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">#FanMeetup</string>
+    <string name="title_stadium_detail">Stadium Details</string>
+    <string name="login_string">Login</string>
+    <string name="stadium_view">Stadium View</string>
+    <string name="stadium_select">Select A Stadium</string>
+    <string name="default_string">Default String</string>
+    <string name="where_sitting">Where are you sitting?</string>
+    <string name="check_in">Check In</string>
+    <string name="check_in_recent">Recent Check-Ins</string>
+
+</resources>

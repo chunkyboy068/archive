@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Foot Traffic</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_user">Send Data to Server</string>
+
+    <string-array name="drop_down">
+        <item>GPS Location</item>
+        <item>Last GPS Update</item>
+        <item>Brightness</item>
+        <item>Temperature</item>
+    </string-array>
+
+    <string name="title_activity_user_request">Request Data</string>
+
+</resources>

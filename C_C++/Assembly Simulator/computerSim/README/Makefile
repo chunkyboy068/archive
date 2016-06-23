@@ -1,0 +1,16 @@
+all: html pdf
+
+html:
+	markdown README.txt > README.html
+	markdown ApplicationOfLinux.txt > ApplicationOfLinux.html
+
+pdf: html
+	pandoc -s -S README.html -o README.pdf
+	pandoc -s -S ApplicationOfLinux.html -o ApplicationOfLinux.pdf
+	
+preview: 
+	$(EDITOR) README.txt
+
+clean:
+	rm *.pdf
+	rm *.html

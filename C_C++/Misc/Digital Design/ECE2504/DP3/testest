@@ -1,0 +1,9 @@
+
+;sample program to use while learning mplab
+
+		org		0x00
+		clearw		;bug to fix??
+loop	addlw	0x01
+		movwf	20h
+		goto loop
+		end

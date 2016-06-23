@@ -1,0 +1,79 @@
+MPLINK 4.42, Linker
+Linker Map File - Created Tue May 01 12:10:21 2012
+
+                                 Section Info
+                  Section       Type    Address   Location Size(Bytes)
+                ---------  ---------  ---------  ---------  ---------
+                   .org_0       code   0x000000    program   0x000000
+                   .org_1       code   0x000000    program   0x000008
+                   .org_2       code   0x000004    program   0x000012
+                   .org_3       code   0x000100    program   0x0000fe
+.config_2007_DP4START_S12.O       code   0x002007    program   0x000002
+
+
+
+                              Program Memory Usage 
+                               Start         End      
+                           ---------   ---------      
+                            0x000000    0x00000c      
+                            0x000100    0x00017e      
+                            0x002007    0x002007      
+            141 out of 1093 program addresses used, program memory utilization is 12%
+
+
+
+                              Symbols - Sorted by Name
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                    again   0x00017c    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+               changeloop   0x00014c    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+             check_amount   0x000131    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+                countto15   0x000179    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+                  dime_in   0x000125    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+                 dispense   0x000149    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+                dollar_in   0x00012d    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+                end_check   0x000148    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+               give_candy   0x000172    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+                  handler   0x000004    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+                     loop   0x000109    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+                     main   0x000100    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+                     next   0x000118    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+                nickel_in   0x000121    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+                not_equal   0x000143    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+               quarter_in   0x000129    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+          quarter_or_dime   0x000157    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+             return_coins   0x000119    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+              return_dime   0x000162    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+            return_nickel   0x00016a    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+           return_quarter   0x00015a    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+                    start   0x000000    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+
+
+
+                              Symbols - Sorted by Address
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                    start   0x000000    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+                  handler   0x000004    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+                     main   0x000100    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+                     loop   0x000109    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+                     next   0x000118    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+             return_coins   0x000119    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+                nickel_in   0x000121    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+                  dime_in   0x000125    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+               quarter_in   0x000129    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+                dollar_in   0x00012d    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+             check_amount   0x000131    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+                not_equal   0x000143    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+                end_check   0x000148    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+                 dispense   0x000149    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+               changeloop   0x00014c    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+          quarter_or_dime   0x000157    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+           return_quarter   0x00015a    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+              return_dime   0x000162    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+            return_nickel   0x00016a    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+               give_candy   0x000172    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+                countto15   0x000179    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+                    again   0x00017c    program     static C:\Users\Thomas\Desktop\DP4\DP4start_S12.asm
+
+

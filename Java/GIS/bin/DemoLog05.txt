@@ -1,0 +1,69 @@
+Thomas Yu
+CS 3114 Project 4
+LOG FILE
+Database File to be written to: demoDB05.txt
+Script Input File: DemoScript05.txt
+
+------------------------------------------------------------
+; Demo script 5
+;
+; Specify boundaries of coordinate space:
+world	1090000W	1050000W	370000N	410000N
+
+The World Size has been set to: 
+North Latitude: 147600
+South Latitude: 133200
+West Longitude: -392400
+East Longitude: -378000
+------------------------------------------------------------
+;
+; Import a sizeable number of records:
+Command #1: import	CO_Ouray.txt
+
+567 Records successfully added to demoDB05.txt
+567 Total Entries in Hash Table
+Longest Probe Sequence: 5
+------------------------------------------------------------
+;
+; Take a look at the indices, if you like:
+;debug	quad
+;debug	hash
+;
+; Perform a couple of some no-match searches by name/state:
+Command #2: what_is	Not There Summit	CO
+
+Nothing found for Not There Summit:CO
+------------------------------------------------------------
+Command #3: what_is	Sniffles Creek	CO
+
+Nothing found for Sniffles Creek:CO
+------------------------------------------------------------
+;
+; Perform a couple of some no-match searches by location:
+Command #4: what_is_at	390000N	1070000W
+
+The following features are found at 1070000W 390000N:
+None
+------------------------------------------------------------
+Command #5: what_is_at	370000N	1090000W
+
+The following features are found at 1090000W 370000N:
+None
+------------------------------------------------------------
+;
+; Perform a couple of some no-match region searches:
+Command #6: what_is_in	390000N	1070000W	15	15
+
+0 features found in 390000N+/-15, 1070000W+/-15:
+------------------------------------------------------------
+Command #7: what_is_in	405900N	1085900W	30	120
+
+0 features found in 405900N+/-30, 1085900W+/-120:
+------------------------------------------------------------
+;
+; Exit:
+Command #8: quit	
+
+Terminating Execution of Commands
+Shutting down...
+------------------------------------------------------------

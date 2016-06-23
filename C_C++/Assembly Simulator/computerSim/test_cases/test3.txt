@@ -1,0 +1,14 @@
+ADDV 10
+ADDV -2
+NOP
+NOP
+ADDV 7
+STORE 002
+CLEAR
+BGTZ 10
+ADDV 4
+BGTZ 12
+ADD 002
+LOAD 002
+OUT "The value in the accumulator is %A."
+HALT

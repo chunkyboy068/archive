@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>	
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"	
+	 xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/
+javaee/web-app_2_5.xsd"	
+	 xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/
+javaee/web-app_3_0.xsd"	
+	 id="WebApp_ID" version="3.0">	
+	 <display-name>Swole-Goal</display-name>	
+	
+	 <servlet>	
+	 	<servlet-name>RequestPeer</servlet-name>	
+	 	<servlet-class>com.ece4564.group11.workout.server.RequestPeer</servlet-class>	
+	 </servlet>	
+	 <servlet>	
+	 	<servlet-name>RequestQuote</servlet-name>	
+	 	<servlet-class>com.ece4564.group11.workout.server.RequestQuote</servlet-class>	
+	 </servlet>	
+	 <servlet>	
+	 	<servlet-name>StoreData</servlet-name>	
+	 	<servlet-class>com.ece4564.group11.workout.server.StoreData</servlet-class>	
+	 </servlet>	
+	 <servlet>	
+	 	<servlet-name>View</servlet-name>	
+	 	<servlet-class>com.ece4564.group11.workout.server.View</servlet-class>	
+	 </servlet>	
+	 	 <servlet>	
+	 	<servlet-name>RequestWorkout</servlet-name>	
+	 	<servlet-class>com.ece4564.group11.workout.server.RequestWorkout</servlet-class>	
+	 </servlet>	
+	
+	 <servlet-mapping>	
+	 	<servlet-name>View</servlet-name>	
+	 	<url-pattern>/</url-pattern>	
+	 </servlet-mapping>
+	 <servlet-mapping>	
+	 	<servlet-name>RequestPeer</servlet-name>	
+	 	<url-pattern>/request</url-pattern>	
+	 </servlet-mapping>		
+	 <servlet-mapping>	
+	 	<servlet-name>RequestQuote</servlet-name>	
+	 	<url-pattern>/quote</url-pattern>	
+	 </servlet-mapping>	
+	 <servlet-mapping>	
+	 	<servlet-name>StoreData</servlet-name>	
+	 	<url-pattern>/store</url-pattern>	
+	 </servlet-mapping>	
+	<servlet-mapping>	
+	 	<servlet-name>RequestWorkout</servlet-name>	
+	 	<url-pattern>/requestone</url-pattern>	
+	 </servlet-mapping>	
+	 
+</web-app>

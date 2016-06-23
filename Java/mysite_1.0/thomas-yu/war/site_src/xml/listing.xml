@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<page_listing>
+	<page id="index">
+		<path>war/site_src/html/index.html</path>
+	</page>
+	<page id="skills">
+		<path>war/site_src/html/skills.html</path>
+	</page>
+	<page id="education">
+		<path>war/site_src/html/educ.html</path>
+	</page>
+	<page id="contact">
+		<path>war/site_src/html/contact.html</path>
+	</page>
+	<page id="activity">
+		<path>war/site_src/html/activity.html</path>
+	</page>
+	<page id="about">
+		<path>war/site_src/html/about.html</path>
+	</page>
+	<page id="archive">
+		<path>war/site_src/html/projarchive.html</path>
+	</page>
+	<page id="fineprint">
+		<path>war/site_src/html/fineprint.html</path>
+	</page>
+</page_listing>
